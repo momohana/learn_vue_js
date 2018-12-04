@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div id="app">
+		<p v-show="toggle">
+			Hello
+		</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js">
+  </script>
+
+	<script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        toggle: false // <- 'false'で表示されない、'true'で表示される
+      }
+    })
+  </script>
+</body>
+</html>
