@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div>
+		<input 
+				name="email" 
+				v-model="email" 
+				v-validate="'requires|email'"
+					:class="{'has-error': errors.has('email')}">
+		<p v-if="errors.has('email')" class="alert-danger">
+			{{ errors.first('email') }}
+		</p>
+		
+		<button @click="register">Register</button>
+  </div>
+	
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js">
+  </script>
+
+	<script>
+		import Vue from 'vue'
+		import VeeValidate from 'vee-validate'
+		
+		Vue.use(VeeValidate)
+		
+		export default {
+			data () {
+				return {
+					email: ''
+				}
+			},
+			methods: {
+				register () {
+					this.$validator.validateAll().then((result) => {
+						if (!result) {
+							alert(this.errors.all())
+							return
+						}
+						alert('Hello, ' + this.email)
+					})
+				}
+			}
+		}
+  </script>
+</body>
+</html>
