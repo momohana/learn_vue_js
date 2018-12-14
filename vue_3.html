@@ -6,6 +6,9 @@
 	<p>{{ items[0].name }}: {{ items[0].price }} x {{ items[0].quantity }}</p>
 	<p>フィルタ処理例 {{1000 | numberWithDelimiter}}</p>
 </div>
+<p>小計: {{ totalPrice | numberWithDelimiter }} 円</p>
+
+<p>合計(税込): {{ totalPriceWithTax | numberWithDelimiter }} 円</p>
 
 <script>
 	var items = [
@@ -25,7 +28,7 @@
 			quantity: 0
 		}
 	]
-	
+
   var vm = new Vue({
     el: '#app',
     data: { // dataプロパティ
@@ -36,7 +39,7 @@
 				if (!value) {
 					return '0'
 				}
-				return value.toString().replace(/(\d)(?=(\d{3)+$)/g, '$1.')
+				return value.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,')
 			}
 		}
   })
