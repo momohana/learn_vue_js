@@ -37,6 +37,22 @@
     <input id="completedTime" v-model="completedTime" type="datetime-local" name="completedTime">
   </p>
   <p>
+    <label for="inquiryToLocalSupplier">Inquiry to local supplier</label>
+    <input id="inquiryToLocalSupplier" v-model="inquiryToLocalSupplier" type="datetime-local" name="inquiryToLocalSupplier">
+  </p>
+  <p>
+    <label for="responseFromLocalSupplier">Response from local supplier</label>
+    <input id="responseFromLocalSupplier" v-model="responseFromLocalSupplier" type="datetime-local" name="responseFromLocalSupplier">
+  </p>
+  <p>
+    <label for="inquiryToJHQ">Inquiry to JHQ</label>
+    <input id="inquiryToJHQ" v-model="inquiryToJHQ" type="datetime-local" name="inquiryToJHQ">
+  </p>
+  <p>
+    <label for="responseBackFromJHQ">Response back from JHQ</label>
+    <input id="responseBackFromJHQ" v-model="responseBackFromJHQ" type="datetime-local" name="responseBackFromJHQ">
+  </p>
+  <p>
     <input type="submit" value="submit">
   </p>
 </form>
@@ -48,29 +64,88 @@
       status: null,
       inquiryType: null,
       requestTime: null,
-      completedTime: null
+      completedTime: null,
+      inquiryToLocalSupplier: null,
+      responseFromLocalSupplier: null,
+      inquiryToJHQ: null,
+      responseBackFromJHQ: null
     },
     methods: {
       checkForm: function (e) {
-        if (this.status == 'Completed' && this.inquiryType && this.requestTime && this.completedTime && this.requestTime < this.completedTime) {
+        // true(正しい)の状態
+        if (this.status == 'Completed' // statusは「Completed」であること
+            && this.inquiryType // inquiryTypeは入力非数
+            && this.requestTime // requestTimeは入力必須
+            && this.completedTime // completedTimeは入力必須
+            && this.requestTime < this.completedTime // requestTimeはcompleteTimeより前
+            // LocalSupplierは、両方nullか両方値が入っていること
+            && ((!this.inquiryToLocalSupplier && !this.responseFromLocalSupplier)
+                 || (this.inquiryToLocalSupplier && this.responseFromLocalSupplier
+                     // 両方値が入っていた場合、inquiryToはresponseFromよりも前
+                     && this.inquiryToLocalSupplier < this.responseFromLocalSupplier
+                     // requestTimeはinquiryToLocalSupplierよりも前
+                     && this.requestTime < this.inquiryToLocalSupplier
+                     // responseFromLocalSupplierはcompletedTimeよりも前
+                     && this.responseFromLocalSupplier < this.completedTime))
+            // JHQは、両方nullか両方値が入っていること
+            && ((!this.inquiryToJHQ && !this.responseBackFromJHQ)
+                 || (this.inquiryToJHQ && this.responseBackFromJHQ
+                     // 両方値が入っていた場合、inquiryToはresponseFromよりも前
+                     && this.inquiryToJHQ < this.responseBackFromJHQ
+                     // requestTimeはinquiryToJHQよりも前
+                     && this.requestTime < this.inquiryToJHQ
+                     // responseBackFromJHQはcompletedTimeよりも前
+                     && this.responseBackFromJHQ < this.completedTime))
+            )
+            {
           return true;
         }
         this.errors = [];
 
         if (this.status != 'Completed') {
-          this.errors.push('Status is completed.')
+          this.errors.push('[Status] must be Completed.')
         }
         if (!this.inquiryType) {
-          this.errors.push('Inquiry type required.')
+          this.errors.push('[Inquiry type] required.')
         }
         if (!this.requestTime) {
-          this.errors.push('request time required.')
+          this.errors.push('[Request time] required.')
         }
         if (!this.completedTime) {
-          this.errors.push('completed time required.')
+          this.errors.push('[Completed time] required.')
         }
         if (this.requestTime > this.completedTime) {
-          this.errors.push('time is -.')
+          this.errors.push('[Request Time] is later than [Completed time].')
+        }
+        if (this.inquiryToLocalSupplier && !this.responseFromLocalSupplier) {
+          this.errors.push('[Inquiry to local supplier] is entered but [Response from local supplier] is not entered.')
+        }
+        if (!this.inquiryToLocalSupplier && this.responseFromLocalSupplier) {
+          this.errors.push('[Response from local supplier] is entered but [Inquiry to local supplier] is not entered.')
+        }
+        if (this.inquiryToLocalSupplier > this.responseFromLocalSupplier) {
+          this.errors.push('[Inquiry to local supplier] is later than [Response from local supplier]')
+        }
+        if (this.requestTime > this.inquiryToLocalSupplier) {
+          this.errors.push('[Request time] is later than [Inquiry to local supplier]')
+        }
+        if (this.responseFromLocalSupplier > this.completedTime) {
+          this.errors.push('[Response from local supplier] is later than [Completed time]')
+        }
+        if (this.inquiryToJHQ && !this.responseBackFromJHQ) {
+          this.errors.push('[Inquiry to JHQ] is entered but [Response back from JHQ] is not entered.')
+        }
+        if (!this.inquiryToJHQ && this.responseBackFromJHQ) {
+          this.errors.push('[Response back from JHQ] is entered but [Inquiry to JHQ] is not entered.')
+        }
+        if (this.inquiryToJHQ > this.responseBackFromJHQ) {
+          this.errors.push('[Inquiry to JHQ] is later than [Response back from JHQ]')
+        }
+        if (this.requestTime > this.inquiryToJHQ) {
+          this.errors.push('[Request time] is later than [Inquiry to JHQ]')
+        }
+        if (this.responseBackFromJHQ > this.completedTime) {
+          this.errors.push('[Response back from JHQ] is later than [Completed time]')
         }
         e.preventDefault();
       }
