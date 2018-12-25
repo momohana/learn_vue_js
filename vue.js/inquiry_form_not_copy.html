@@ -1,0 +1,158 @@
+{% extends "../base.html" %}
+{% load static %}
+{% block content %}
+<script src="{% static 'js/datetimepicker-master/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/datetimepicker-master/build/jquery.datetimepicker.full.js' %}"></script>
+<script src="https://unpkg.com/vue@2.5.17"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'js/datetimepicker-master/jquery.datetimepicker.css' %}">
+  <!--span class="display-4">Inquiry Form</span-->
+      <form id="app" @submit="checkForm" action="" method="post" novalidate="true">
+        <p v-if="errros.length">
+          <b>Pless correct the following error(s):</b>
+          <ul>
+            <li v-for="error in errors">{{ error }}</li>
+          </ul>
+        </p>
+        <div class="form-group">
+          <div class="card-deck">
+            <div class="card bg-light" style="width: 28rem;">
+                <div class="card-body">
+                  <h5 class="card-title">Subsidiary Code</h5>
+                  {{ form.SUBSIDIARY_CD }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">PIC</h5>
+                  {{ form.PIC }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Status <small class="text-danger">*{{ form.STATUS.help_text}}</small></h5>
+                  {{ form.STATUS }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Inquiry Type <small class="text-danger">*{{ form.INQUIRY_TYPE.help_text}}</small></h5>
+                  {{ form.INQUIRY_TYPE }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Division</h5>
+                  {{ form.DIVISION }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Media</h5>
+                  {{ form.MEDIA }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Request Division</h5>
+                  {{ form.REQUEST_DIVISION }}
+                </div>
+              </div>
+              <div class="card bg-light" style="width: 28rem">
+                <div class="card-body">
+                  <h5 class="card-title">Request Time<small class="text-danger">*{{ form.REQUEST_TIME.help_text}}</small></h5>
+                  {{ form.REQUEST_TIME }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">BD First Reply Time</h5>
+                  {{ form.BD_FIRST_REPLY_TIME }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Confirm with BD inside <small class="text-danger">*{{ form.CONFIRM_WITH_BD_INSIDE.help_text}}</small></h5>
+                  {{ form.CONFIRM_WITH_BD_INSIDE }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Inquiry to local supplier <small class="text-danger">*{{ form.INQUIRY_TO_LOCAL_SUPPLIER.help_text}}</small></h5>
+                  {{ form.INQUIRY_TO_LOCAL_SUPPLIER }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Inquiry to JHQ <small class="text-danger">*{{ form.INQUIRY_TO_BU.help_text}}</small></h5>
+                  {{ form.INQUIRY_TO_BU }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Response from BD inside <small class="text-danger">*{{ form.RESPONSE_FROM_BD_INSIDE.help_text}}</small></h5>
+                  {{ form.RESPONSE_FROM_BD_INSIDE }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Response from Local Supplier <small class="text-danger">*{{ form.RESPONSE_FROM_LOCAL_SUPPLIER.help_text}}</small></h5>
+                  {{ form.RESPONSE_FROM_LOCAL_SUPPLIER }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Response back from JHQ <small class="text-danger">*{{ form.RESPONSE_BACK_FROM_JHQ.help_text}}</small></h5>
+                  {{ form.RESPONSE_BACK_FROM_JHQ }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Completed time<small class="text-danger">*{{ form.BD_SENDS_ANSWERS.help_text}}</small></h5>
+                  {{ form.COMPLETED_TIME }}
+                </div>
+              </div>
+              <div class="card bg-light" style="width: 28rem">
+                <div class="card-body">
+                  <h5 class="card-title">Product</h5>
+                  {{ form.PRODUCT_CD }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Customer</h5>
+                  {{ form.CUST_CD }}
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Comments</h5>
+                  {{ form.COMMENTS }}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% csrf_token %}
+          <div class="form-group" style="padding:20px 0">
+            <input id="btn0" type="submit" value="Submit" class="btn btn-primary" />
+            <a id="btn1" class="btn btn-outline-secondary copy" href="{% url 'copy' %}">Copy</a>
+            <a id="btn2"></a>
+          </div>
+      </form>
+      <script>
+        const app = new Vue({
+          el: '#app';
+          data: {
+            errors: [];
+            status: null;
+          },
+          methods: {
+            checkForm: function (e) {
+              if (this.status == 'Completed')
+                { return true; }
+              this.errors = [];
+              if (this.status != 'Completed') {
+                this.errors.push('Status must be Completed.')
+              }
+              e.preventDefault();
+            }
+          }
+        })
+      </script>
+    <script>
+    jQuery('#id_REQUEST_TIME').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    jQuery('#id_BD_FIRST_REPLY_TIME').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    jQuery('#id_CONFIRM_WITH_BD_INSIDE').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    jQuery('#id_INQUIRY_TO_LOCAL_SUPPLIER').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    jQuery('#id_INQUIRY_TO_BU').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    jQuery('#id_RESPONSE_FROM_BD_INSIDE').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    jQuery('#id_RESPONSE_FROM_LOCAL_SUPPLIER').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    jQuery('#id_RESPONSE_BACK_FROM_JHQ').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    jQuery('#id_COMPLETED_TIME').datetimepicker({
+      format: "Y-m-d H:i:s"
+    });
+    </script>
+{% endblock %}

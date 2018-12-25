@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ピュアJavaScriptでのバリデーション</title>
+  </head>
+  <body>
+    <h1>エラー一覧</h1>
+    <ul id="list">
+    </ul>
+    <form id="myForm" name="myForm" action="" method="" onsubmit="return validate()">
+      <p>
+        <label for="status">Status:</label>
+        <select id ="status" name="status">
+          <option>Processing</option>
+          <option>Completed</option>
+        </select>
+      </p>
+      <p>
+        <label for="requestTime">Request time</label>
+        <input id ="requestTime" type="date" name="requestTime">
+      </p>
+      <p>
+        <label for="completedTime">Completed time</label>
+        <input id ="completedTime" type="date" name="completedTime">
+      </p>
+      <p>
+        <label for="inquiryToLocalSupplier">Inquiry to local supplier</label>
+        <input id ="inquiryToLocalSupplier" type="date" name="inquiryToLocalSupplier">
+      </p>
+      <p>
+        <label for="responseFromLocalSupplier">Response from local supplier</label>
+        <input id ="responseFromLocalSupplier" type="date" name="responseFromLocalSupplier">
+      </p>
+      <p>
+        <label for="inquiryToJHQ">Inquiry to JHQ</label>
+        <input id ="inquiryToJHQ" type="date" name="inquiryToJHQ">
+      </p>
+      <p>
+        <label for="responseBackFromJHQ">Response back from JHQ</label>
+        <input id ="responseBackFromJHQ" type="date" name="responseBackFromJHQ">
+      </p>
+      <input type="submit" id="btn" value="submit" />
+    </form>
+    <script>
+      // 初期化
+      var errors = []; // エラーメッセージを取得するための配列
+      var status = null;
+      var requestTime = null;
+      var completedTime = null;
+      var inquiryToLocalSupplier = null;
+      var responseFromLocalSupplier = null;
+      var inquiryToJHQ = null;
+      var responseBackFromJHQ = null;
+      var html = '';
+
+      var validate = function () {
+        // btn.addEventListener('click', function () {
+          this.status = document.getElementById('status').value;
+          this.requestTime = document.getElementById('requestTime').value;
+          this.completedTime = document.getElementById('completedTime').value;
+          this.inquiryToLocalSupplier = document.getElementById('inquiryToLocalSupplier').value;
+          this.responseFromLocalSupplier = document.getElementById('responseFromLocalSupplier').value;
+          this.inquiryToJHQ = document.getElementById('inquiryToJHQ').value;
+          this.responseBackFromJHQ = document.getElementById('responseBackFromJHQ').value;
+          // true(正しい)の状態設定
+          if (this.status == 'Completed' // Statusは「Completed」
+              && this.requestTime //「Request time」は入力必須
+              && this.completedTime //「Completed time」は入力必須　
+              && this.requestTime < this.completedTime // requestTimeはcompletedTimeより前
+              // LocalSupplier/JHQは、両方ともにnullか、値が入っている
+              && ((!this.inquiryToLocalSupplier && !this.responseFromLocalSupplier)
+                 ||(this.inquiryToLocalSupplier && this.responseFromLocalSupplier
+                    // 両方値が入っていた場合、inquiryToResponseFromよりも前
+                    && this.inquiryToLocalSupplier < this.responseFromLocalSupplier
+                    // requestTimeはinquiryよりも前
+                    && this.requestTime < this.inquiryToLocalSupplier
+                    // responseはcompletedよりも前
+                    && this.responseFromLocalSupplier < this.completedTime))
+              //JHQ
+              && ((!this.inquiryToJHQ && !this.responseBackFromJHQ)
+                  ||(this.inquiryToJHQ && this.responseBackFromJHQ
+                    // 両方値が入っていた場合、inquiryToResponseFromよりも前
+                    && this.inquiryToJHQ < this.responseBackFromJHQ
+                    // requestTimeはinquiryよりも前
+                    && this.requestTime < this.inquiryToJHQ
+                    // responseはcompletedよりも前
+                    && this.responseBackFromJHQ < this.completedTime))
+              )
+              { return true; }
+          else {
+          this.errors = [];
+          // statusが'Completed'以外
+          if (this.status != 'Completed') {
+            this.errors.push('Status must be Completed');
+          }
+          // requestTimeが入力されていない
+          if (!this.requestTime) {
+            this.errors.push('Request time required');
+          }
+          // completedTimeが入力されていない
+          if (!this.completedTime) {
+            this.errors.push('Completed time required');
+          }
+          // requestTimeがcompletedTimeの後
+          if (this.requestTime > this.completedTime) {
+            this.errors.push('Request time is later than Completed time');
+          }
+          // inquiryToが入力されているのにresponseFromが入力されていない
+          if (this.inquiryToLocalSupplier && !this.responseFromLocalSupplier) {
+            this.errors.push('[Inquiry to local supplier] is entered but [Response from local supplier] is not enered.')
+          }
+          // responseFromが入力されているのにinquiryToが入力されていない
+          if (!this.inquiryToLocalSupplier && this.responseFromLocalSupplier) {
+            this.errors.push('[Response from local supplier] is entered but [Response from local supplier] is not entered.')
+          }
+          // 入力されていた場合でも
+          if (this.inquiryToLocalSupplier && this.responseFromLocalSupplier) {
+            // responseFromよりinquiryToのほうが後
+            if (this.inquiryToLocalSupplier > this.responseFromLocalSupplier) {
+              this.errors.push('[Inquiry to local supplier] is later than [responseFromLocalSupplier]')
+            }
+            // inquiryToよりrequestTimeが後
+            if (this.requestTime > this.inquiryToLocalSupplier) {
+              this.errors.push('[Request time] is later than [Inquiry to local supplier]')
+            }
+            // completedよりresponseFromが後
+            if (this.responseFromLocalSupplier > this.completedTime) {
+              this.errors.push('[Response from local supplier] is later than [Completed time]')
+            }
+          }
+          // inquiryToが入力されていて、responseBackが入力されていない
+          if (this.inquiryToJHQ && !this.responseBackFromJHQ) {
+            this.errors.push('[Inquiry to JHQ] is entered but [Response back from JHQ]')
+          }
+          // responsebackが入力されていて、inquiryToが入力されていない
+          if (!this.inquiryToJHQ && this.responseBackFromJHQ) {
+            this.errors.push('[Response back from JHQ] is enered but [Inquiry to JHQ]')
+          }
+          // 入力されていても
+          if (this.inquiryToJHQ && this.responseBackFromJHQ) {
+            // responseBackよりinquiryToが後
+            if (this.inquiryToJHQ > this.responseBackFromJHQ) {
+              this.errors.push('[Inquiry to JHQ] is later than [Response back from JHQ]')
+            }
+            // requestTimeよりinquiryToが後
+            if (this.requestTime > this.inquiryToJHQ) {
+              this.errors.push('[Request time] is later than [Inquiry to JHQ]')
+            }
+            // completedよりresponseBackが後
+            if (this.responseBackFromJHQ > this.completedTime) {
+              this.errors.push('[Response back from JHQ] is later than [Completed time]')
+            }
+          }
+        }
+        {
+
+          for (var i = 0; i < this.errors.length; i++) {
+            var li = document.createElement('li');
+            li.textContent = this.errors[i];
+            document.getElementById('list').appendChild(li);
+            console.log(li);
+          }
+          return false;
+        }
+      }
+      //document.addEventListener('DOMContentLoaded', function () {
+    //})
+    </script>
+  </body>
+</html>
+
+if (li_count == null) {
+  for (var i = 0; i < this.errors.length; i++) {
+    var li = document.createElement('li');
+    li.textContent = this.errors[i];
+    document.getElementById('list').appendChild(li);
+  }
+} else {
+  var clone = list.cloneNode( false );
+  list.parentNode.replaceChaild(clone, list);
+  for (var i = 0; i < this.errors.length; i++) {
+    var li = document.createElement('li');
+    li.textContent = this.errors[i];
+    document.getElementById('list').appendChild(li);
+  }

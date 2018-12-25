@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ピュアJavaScriptでのバリデーション</title>
+  </head>
+  <body>
+    <h1 id="head"></h1>
+    <ul id="list">
+    </ul>
+    <form id="myForm" name="myForm" action="" method="post" onsubmit="return validate()">
+      <p>
+        <label for="status">Status:</label>
+        <select id ="status" name="status">
+          <option>Processing</option>
+          <<option>Completed</option>
+        </select>
+      </p>
+      <p>
+        <label for="requestTime">Request time</label>
+        <input id ="requestTime" type="date" name="requestTime">
+      </p>
+      <p>
+        <label for="completedTime">Completed time</label>
+        <input id ="completedTime" type="date" name="completedTime">
+      </p>
+      <p>
+        <label for="inquiryToLocalSupplier">Inquiry to local supplier</label>
+        <input id ="inquiryToLocalSupplier" type="date" name="inquiryToLocalSupplier">
+      </p>
+      <p>
+        <label for="responseFromLocalSupplier">Response from local supplier</label>
+        <input id ="responseFromLocalSupplier" type="date" name="responseFromLocalSupplier">
+      </p>
+      <p>
+        <label for="inquiryToJHQ">Inquiry to JHQ</label>
+        <input id ="inquiryToJHQ" type="date" name="inquiryToJHQ">
+      </p>
+      <p>
+        <label for="responseBackFromJHQ">Response back from JHQ</label>
+        <input id ="responseBackFromJHQ" type="date" name="responseBackFromJHQ">
+      </p>
+      <input type="submit" value="submmit">
+    </form>
+
+<script>
+// 初期化
+var errors = [];  // エラーメッセージの初期化
+var status = null;  //「Status」入力値の初期化
+var requestTime = null; //「Request time」の初期化
+var completedTime = null; // 「Completed time」の初期化
+var inquiryToLocalSupplier = null;
+var responseFromLocalSupplier = null;
+var inquiryToJHQ = null;
+var responseBackFromJHQ = null;
+
+// バリデーションチェック処理
+var validate = function(){
+  // 入力値の取得
+  this.status = document.getElementById('status').value; // [Status]
+  this.requestTime = document.getElementById('requestTime').value; // [Request time]
+  this.completedTime = document.getElementById('completedTime').value; // [Completed time]
+  this.inquiryToLocalSupplier = document.getElementById('inquiryToLocalSupplier').value;  // [Inquiry to local supplier]
+  this.responseFromLocalSupplier = document.getElementById('responseFromLocalSupplier').value;  // [Response from local supplier]
+  this.inquiryToJHQ = document.getElementById('inquiryToJHQ').value;  // [Inquiry to JHQ]
+  this.responseBackFromJHQ = document.getElementById('responseBackFromJHQ').value;  // [Response back from JHQ]
+
+  // [Status]が"Processing"の場合は、そのままスルーしてpost
+  if(this.status == 'Processing') {
+    true;
+  } else {
+  // 入力漏れや時刻の前後に問題がないかをチェック
+  // はじめに正常値を設定
+  if(this.status == "Completed" // [Status]が"Completed"である
+     && this.requestTime        // [Request time]が入力されている
+     && this.completedTime      // [Completed time]が入力されている
+     && this.requestTime < this.completedTime // [Request time]が[Completed time]よりも前である
+     // LocalSupplierとJHQは両方ともに値が入力されているか、されていないかが正常
+     && ((!this.inquiryToLocalSupplier && !this.responseFromLocalSupplier)
+        ||(this.inquiryToLocalSupplier && this.responseFromLocalSupplier
+          // 両方に値が入っていた場合、to fromの順番
+          && this.inquiryToLocalSupplier < this.responseFromLocalSupplier
+          // [Request time]は、toの前
+          && this.requestTime < this.inquiryToLocalSupplier
+          // [from]は、[Completed time]の前
+          && this.responseFromLocalSupplier < this.completedTime))
+     // JHQ
+     && ((!this.inquiryToJHQ && !this.responseBackFromJHQ)
+        ||(this.inquiryToJHQ && this.responseBackFromJHQ
+        // 両方に値が入っていた場合、to fromの順番
+          && this.inquiryToJHQ < this.responseBackFromJHQ
+          // [Request time]は、toの前
+          && this.requestTime < this.inquiryToJHQ
+          // [from]は、[Completed time]の前
+          && this.responseBackFromJHQ < this.completedTime))
+     )
+  {
+    return true;  // 上記の条件をすべて満たしている場合、処理は"true"となり、Postされる
+  } else {
+    // それ以外
+    this.errors = [];   // errorsリストの初期化
+    // [Status]が"Completed"以外
+    if(this.status != 'Completed') {
+      this.errors.push("[Status] must be Completed."); // エラーメッセージをerrorsリストに追加
+    }
+    // [Request time]が入力されていない
+    if(!this.requestTime) {
+      this.errors.push("[Request time] required");  // エラーメッセージをerrorsリストに追加
+    }
+    // [Completed time]が入力されていない
+    if(!this.completedTime) {
+      this.errors.push("[Completed time] required");  // エラーメッセージをerrorsリストに追加
+    }
+    // [Request time]が[Completed time]よりも後
+    if(this.requestTime > this.completedTime) {
+      this.errors.push("[Request time] is later than [Completed time]");  // エラーメッセージをerrorsリストに追加
+    }
+    // LocalSupplierとJHQの場合、どちらかしか入力されていない状態がエラー
+    if(this.inquiryToLocalSupplier && !this.responseFromLocalSupplier) {
+      this.errors.push("[Inquiry to local supplier] is entered but [Response from local supplier] is not entered")
+    }
+    if(!this.inquiryToLocalSupplier && this.responseFromLocalSupplier) {
+      this.errors.push('[Response from local supplier] is entered but [Inquiry to local supplier] is not entered.')
+    }
+    // 両方入力されていた場合でも、
+    if(this.inquiryToLocalSupplier && this.responseFromLocalSupplier) {
+      // toのほうがfromより後だったり、
+      if(this.inquiryToLocalSupplier > this.responseFromLocalSupplier) {
+        this.errors.push('[Inquiry to local supplier] is later than [Response from local supplier]')
+      }
+      // toよりもRequest timeのほうが後、
+      if(this.requestTime > this.inquiryToLocalSupplier) {
+        this.errors.push('[Request time] is later than [Inquiry to local supplier]')
+      }
+      // または、fromのほうがCompleted timeよりもあとだとエラー
+      if(this.responseFromLocalSupplier > this.completedTime) {
+        this.errors.push('[Response from local supplier] is later than [Completed time]')
+      }
+    }
+    if(this.inquiryToJHQ && !this.responseBackFromJHQ) {
+      this.errors.push("[Inquiry to JHQ] is entered but [Response back from JHQ] is not entered")
+    }
+    if(!this.inquiryToJHQ && this.responseBackFromJHQ) {
+      this.errors.push('[Response back from JHQ] is entered but [Inquiry to JHQ] is not entered.')
+    }
+    if(this.inquiryToJHQ && this.responseBackFromJHQ) {
+      if(this.inquiryToJHQ > this.responseBackFromJHQ) {
+        this.errors.push('[Inquiry to JHQ] is later than [Response back from JHQ]')
+      }
+      if(this.requestTime > this.inquiryToJHQ) {
+        this.errors.push('[Request time] is later than [Inquiry to JHQ]')
+      }
+      if(this.responseBackFromJHQ > this.completedTime) {
+        this.errors.push('[Response back from JHQ] is later than [Completed time]')
+      }
+    }
+    // エラーメッセージ一覧を画面上に表示
+    // メッセージ出力欄の初期化
+    var $h1 = null;
+    var $ul = null;   // ulタグの初期化
+    var $h1 = document.getElementById('head')   // id='head'の取得
+    var $ul = document.getElementById('list');  // id='list'の取得
+    // bodyタグから$h1, $ulを削除(初期化)
+    document.body.removeChild($h1);
+    document.body.removeChild($ul);
+
+    // $ulの再定義
+    var $ul = document.createElement('ul'); // ulタグ要素の生成
+    $ul.id = 'list';  // ulタグ要素にid='list'を付与
+    document.body.insertBefore($ul, document.body.firstChild);  // bodyタグの一番最初の子要素として、$ulを付与
+
+    // $h1の再定義
+    var $h1 = document.createElement('h1');
+    $h1.id = 'head';
+    $h1.insertAdjacentHTML('afterbegin', 'Pless correct the following error(s):');
+    document.body.insertBefore($h1, document.getElementById('list'));
+
+    // エラーメッセージの出力
+    // $ulの出力定義
+    var $ul = document.getElementById('list')
+    // DOMを直接操作するのではなく、fragmentで内部調整する
+    var fragment = document.createDocumentFragment();
+
+    // エラーメッセージ一覧から$ulの子要素(liタグ)を生成
+    for (var i = 0; i < this.errors.length; i++) {
+      var $li = document.createElement('li');
+      var error = document.createTextNode(errors[i]);
+      $li.appendChild(error);
+      fragment.appendChild($li);
+      document.getElementById('list').appendChild($li);
+    }
+    // 生成されたfragmentを$ulの子要素として、追加する
+    $ul.appendChild(fragment);
+    return false;
+  }
+}
+}
+</script>
+</body>
+</html>

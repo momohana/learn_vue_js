@@ -147,6 +147,7 @@
         if (this.responseBackFromJHQ > this.completedTime) {
           this.errors.push('[Response back from JHQ] is later than [Completed time]')
         }
+        console.log(this.errors);
         e.preventDefault();
       }
     }

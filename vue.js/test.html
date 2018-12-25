@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <ul id="list">
+  </ul>
+  <script>
+    var $ul = document.querySelector('#list')
+    var songs = ['終わらない歌',
+                 'キスしてほしい',
+                 '僕の右手',
+                 '情熱の薔薇',
+                 '人にやさしく'];
+    document.body.removeChild($ul);
+    var $ul = document.createElement('ul');
+    $ul.id = 'list';
+    document.body.insertBefore($ul, document.body.firstChild);
+
+    var $ul = document.getElementById('list')
+    var fragment = document.createDocumentFragment();
+
+    for(var cnt=0, len=songs.length; cnt<len; cnt++){
+      var $li = document.createElement('li');
+      var song = document.createTextNode(songs[cnt]);
+      $li.appendChild(song);
+      fragment.appendChild($li);
+    }
+    $ul.appendChild(fragment);
+
+  </script>
+</body>
+</html>
